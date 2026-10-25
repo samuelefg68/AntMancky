@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<title>Antmancky</title>
+<style>
+:root{--bg:#0b1d2a;--fg:#fff;--panel:rgba(10,20,30,.72);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1d2a;--fg:#fff;--panel:rgba(10,20,30,.72)}}
+:root[data-theme="dark"]{--bg:#0b1d2a;--fg:#fff;--panel:rgba(10,20,30,.72)}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);overflow:hidden;font-family:Georgia,"Times New Roman",serif}
+canvas{display:block}
+#hud{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:10px;background:var(--panel);padding:10px 14px;border-radius:10px;font-size:15px;line-height:1.55}
+#bar{width:170px;height:10px;background:#4a1010;border-radius:5px;overflow:hidden;margin-bottom:4px}
+#hp{height:100%;width:100%;background:#58c458}
+#toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 24px);left:50%;transform:translateX(-50%);background:var(--panel);padding:8px 16px;border-radius:8px;opacity:0;transition:opacity .25s}
+:root{--nbg:#e0e5ec;--nl:#fff;--nd:#a3b1c6;--nt:#44546a;--na:#4a6cf7}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--nbg:#2b2f38;--nl:#383d49;--nd:#1d2027;--nt:#c9d1e0;--na:#7c9bff}}
+:root[data-theme="dark"]{--nbg:#2b2f38;--nl:#383d49;--nd:#1d2027;--nt:#c9d1e0;--na:#7c9bff}
+#msg{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--nbg);padding:24px;box-sizing:border-box}
+#card{width:min(380px,100%);max-height:100%;overflow:auto;box-sizing:border-box;background:var(--nbg);border-radius:32px;padding:34px 30px 18px;text-align:center;color:var(--nt);box-shadow:14px 14px 28px var(--nd),-14px -14px 28px var(--nl)}
+#logo{width:84px;height:84px;margin:0 auto 16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:42px;box-shadow:inset 6px 6px 12px var(--nd),inset -6px -6px 12px var(--nl)}
+#msg h1{font-size:34px;margin:0 0 8px;color:var(--nt)}#msg p{line-height:1.5;margin:6px 0 22px;font-size:15px}
+.nb{display:block;width:100%;margin:0 0 18px;padding:15px;border:0;border-radius:16px;background:var(--nbg);color:var(--nt);font:inherit;font-size:17px;cursor:pointer;box-shadow:6px 6px 12px var(--nd),-6px -6px 12px var(--nl);transition:box-shadow .15s,color .15s}
+.nb:hover{color:var(--na)}.nb:active{box-shadow:inset 4px 4px 8px var(--nd),inset -4px -4px 8px var(--nl)}
+.nb.primary{color:var(--na);font-weight:bold;font-size:19px}
+#how{display:none;text-align:left;border-radius:16px;padding:6px 16px;margin-bottom:18px;box-shadow:inset 5px 5px 10px var(--nd),inset -5px -5px 10px var(--nl)}
+#how p{margin:10px 0;font-size:14px}
+#msg,#card,.nb,#hud,#toast{font-family:'Press Start 2P','Courier New',monospace}
+#msg{background-color:#4a3320;background-image:radial-gradient(circle,rgba(0,0,0,0) 25%,rgba(0,0,0,.7)),conic-gradient(#5a4029 25%,#4a3320 0 50%,#573c27 0 75%,#42301f 0);background-size:100% 100%,56px 56px}
+#card{width:min(440px,100%);background:rgba(18,12,6,.82);border-radius:0;padding:30px 26px 14px;color:#eee;box-shadow:0 0 0 4px #000,inset 0 0 0 4px #3b2a1a}
+#logo{width:76px;height:76px;border-radius:0;background:linear-gradient(#5aa530 0 35%,#7a4f2c 35%);box-shadow:0 0 0 3px #000,inset 0 -5px 0 rgba(0,0,0,.35);font-size:40px}
+#msg h1{font-size:22px;line-height:1.4;letter-spacing:1px;color:#8fd14f;text-shadow:3px 3px 0 #2b4a1c,6px 6px 0 #000;overflow-wrap:anywhere;margin:0 0 10px}
+#splash{color:#ffff55;font-size:11px;text-shadow:2px 2px 0 #3f3f00;margin:6px 0 18px;transform:rotate(-4deg);animation:sp 1s ease-in-out infinite alternate}
+@keyframes sp{from{transform:rotate(-4deg) scale(.92)}to{transform:rotate(-4deg) scale(1.08)}}
+#msg p{font-size:11px;line-height:1.9;color:#ddd;text-shadow:1px 1px 0 #000;margin:6px 0 20px}
+.nb{font-size:13px;color:#e8e8e8;text-shadow:2px 2px 0 #3f3f3f;background:#7d7d7d;border-radius:0;padding:16px 10px;margin:0 0 18px;box-shadow:inset -4px -4px 0 #373737,inset 4px 4px 0 #bdbdbd,0 0 0 3px #000;transition:none}
+.nb:hover{background:#6b7bb5;color:#ffffa0}
+.nb:active{box-shadow:inset 4px 4px 0 #373737,inset -4px -4px 0 #bdbdbd,0 0 0 3px #000}
+.nb.primary{background:#4f8f2f;color:#fff;font-size:15px;font-weight:normal;box-shadow:inset -4px -4px 0 #2a5a18,inset 4px 4px 0 #8fd14f,0 0 0 3px #000}
+.nb.primary:hover{background:#5fa83a;color:#ffffa0}
+#how{border-radius:0;background:rgba(0,0,0,.55);box-shadow:0 0 0 3px #000;padding:4px 14px;margin-bottom:20px}
+#how p{font-size:10px;line-height:2;margin:10px 0}
+#hud,#toast{font-size:11px;line-height:1.9;border-radius:0;background:rgba(30,20,10,.82);box-shadow:0 0 0 3px #000}
+#bar,#hp{border-radius:0}
+</style></head><body>
+<div id="hud"><div id="bar"><div id="hp"></div></div>
+<div id="s1"></div><div id="s2"></div><div id="s3"></div></div>
+<div id="toast"></div>
+<div id="msg"><div id="card"><div id="logo">🕷️</div><h1 id="t">ANTMANCKY</h1><div id="splash">Aranha vs. Formigas!</div>
+<p id="d">Sobreviva na ilha, construa 5 casas e destrua os 4 formigueiros.</p>
+<button class="nb primary" id="bPlay">Jogar</button>
+<button class="nb" id="bHow">Como jogar</button>
+<button class="nb" id="bMus">Música: ligada</button>
+<div id="how"><p><b>WASD</b>: mover<br><b>Q/E</b> ou arrastar o mouse: câmera<br><b>Espaço</b>: morder<br><b>B</b>: construir casa (6 madeiras)<br><b>M</b>: música · <b>Esc</b> ou <b>P</b>: pausar</p><p>Formigas mortas e gravetos dão madeira. Perto de uma casa, você recupera vida. Formigas atacam você e as casas.</p></div></div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const T=THREE,R=52,$=id=>document.getElementById(id),rnd=(a,b)=>a+Math.random()*(b-a);
+// ---------- relevo ----------
+const mts=[[-26,-34,22,15],[40,-20,20,12],[-48,36,18,10],[24,44,16,8]];
+const noise=(x,z)=>Math.sin(x*.11)*Math.cos(z*.13)*1.3+Math.sin(x*.23+z*.17)*.6;
+function H(x,z){const r=Math.hypot(x,z);let m=Math.min(1,Math.max(0,(R+4-r)/12));m=m*m*(3-2*m);
+  let h=2+noise(x,z);for(const q of mts){const d=Math.hypot(x-q[0],z-q[1]);h+=q[3]*Math.exp(-(d*d)/(q[2]*q[2]*.5))}
+  return m*h-(1-m)*3.5}
+function randLand(a,b,r0,r1){for(let i=0;i<80;i++){const an=rnd(0,6.28),r=rnd(r0,r1),x=Math.cos(an)*r,z=Math.sin(an)*r,h=H(x,z);if(h>=a&&h<=b)return{x,z,h}}return{x:0,z:0,h:H(0,0)}}
+// ---------- cena ----------
+const scene=new T.Scene();scene.background=new T.Color(0x87ceeb);scene.fog=new T.Fog(0x87ceeb,90,270);
+const cam=new T.PerspectiveCamera(60,innerWidth/innerHeight,.1,500);
+const ren=new T.WebGLRenderer({antialias:true});ren.setSize(innerWidth,innerHeight);ren.setPixelRatio(Math.min(devicePixelRatio,2));ren.shadowMap.enabled=true;document.body.prepend(ren.domElement);
+scene.add(new T.HemisphereLight(0xbfe3ff,0x446644,.85));
+const sun=new T.DirectionalLight(0xfff0cc,.9);sun.position.set(60,100,40);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
+Object.assign(sun.shadow.camera,{left:-75,right:75,top:75,bottom:-75,far:300});scene.add(sun);
+const M=c=>new T.MeshStandardMaterial({color:c,roughness:.9,flatShading:true});
+const mesh=(g,m,x=0,y=0,z=0)=>{const o=new T.Mesh(g,m);o.position.set(x,y,z);o.castShadow=o.receiveShadow=true;return o};
+const og=new T.PlaneGeometry(500,500,60,60);og.rotateX(-Math.PI/2);
+const ocean=new T.Mesh(og,new T.MeshPhongMaterial({color:0x1e6fa8,shininess:80,flatShading:true,transparent:true,opacity:.93}));ocean.position.y=-1;scene.add(ocean);
+{const S=2*(R+12),tg=new T.PlaneGeometry(S,S,128,128);tg.rotateX(-Math.PI/2);const tp=tg.attributes.position,col=new Float32Array(tp.count*3),cc=new T.Color();
+ for(let i=0;i<tp.count;i++){const x=tp.getX(i),z=tp.getZ(i),h=H(x,z);tp.setY(i,h);
+  cc.set(h<.3?0xe3d199:h<4.5?0x58a04a:h<9?0x8a8580:0xf4f4f4);cc.offsetHSL(0,0,Math.sin(x*1.7)*Math.cos(z*1.3)*.03);col.set([cc.r,cc.g,cc.b],i*3)}
+ tg.setAttribute('color',new T.BufferAttribute(col,3));tg.computeVertexNormals();
+ const land=new T.Mesh(tg,new T.MeshStandardMaterial({vertexColors:true,roughness:1,flatShading:true}));land.receiveShadow=land.castShadow=true;scene.add(land)}
+for(let i=0;i<80;i++){const p=randLand(.6,6,6,R-6),g=new T.Group();
+  g.add(mesh(new T.CylinderGeometry(.35,.5,2.2,6),M(0x6b4a2b),0,1.1,0));
+  g.add(mesh(new T.ConeGeometry(1.8,3.6,7),M(0x2f7a3a),0,3.8,0));g.position.set(p.x,p.h,p.z);g.scale.setScalar(rnd(.8,1.4));scene.add(g)}
+for(let i=0;i<30;i++){const p=randLand(.4,10,4,R-3);scene.add(mesh(new T.DodecahedronGeometry(rnd(.5,1.3)),M(0x8a8f96),p.x,p.h+.2,p.z))}
+// ---------- barras ----------
+const bars=[];
+function mkBar(x,y,z,w){const g=new T.Group(),mb=c=>new T.MeshBasicMaterial({color:c,depthTest:false});
+  const bg=new T.Mesh(new T.PlaneGeometry(w,.28),mb(0x330000)),fg=new T.Mesh(new T.PlaneGeometry(w,.28),mb(0x44dd44));
+  bg.renderOrder=998;fg.renderOrder=999;fg.position.z=.01;g.add(bg,fg);g.position.set(x,y,z);g.fg=fg;g.w=w;scene.add(g);bars.push(g);return g}
+function setBar(b,p){p=Math.max(0,p);b.fg.scale.x=Math.max(.001,p);b.fg.position.x=-(1-p)*b.w/2}
+function rmBar(b){scene.remove(b);bars.splice(bars.indexOf(b),1)}
+// ---------- aranha ----------
+const sp=new T.Group(),body=new T.Group();sp.add(body);sp.position.set(0,H(0,0)+.1,0);scene.add(sp);
+const dark=M(0x1d1424),purple=M(0x5b2a7a);
+body.add(mesh(new T.SphereGeometry(.75,14,10),purple,0,.95,-.85));
+body.add(mesh(new T.SphereGeometry(.5,12,10),dark,0,.9,.3));
+const eyeM=new T.MeshBasicMaterial({color:0xff3030});
+[[-.2,1.05,.75,.1],[.2,1.05,.75,.1],[-.1,1.22,.72,.07],[.1,1.22,.72,.07]].forEach(e=>{const s=new T.Mesh(new T.SphereGeometry(e[3],8,6),eyeM);s.position.set(e[0],e[1],e[2]);body.add(s)});
+const legs=[],yaws=[-.75,-.28,.25,.72],zs=[.5,.25,-.05,-.35];
+for(const side of [1,-1])for(let i=0;i<4;i++){
+  const p=new T.Group();p.position.set(0,.9,zs[i]);p.scale.x=side;
+  const g1=new T.CylinderGeometry(.07,.09,1.4,6);g1.translate(0,.7,0);const u=mesh(g1,dark);u.rotation.z=-1.03;p.add(u);
+  const g2=new T.CylinderGeometry(.04,.07,1.6,6);g2.translate(0,.8,0);const l=mesh(g2,dark,1.2,.72,0);l.rotation.z=-2.68;p.add(l);
+  p.rotation.y=side*yaws[i];body.add(p);legs.push({p,base:side*yaws[i],ph:(i%2)*Math.PI+(side>0?0:Math.PI),side})}
+// ---------- áudio ----------
+let AC,master,mus;
+function tone(f,t,d,type,v,dest,f2){const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.02);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(dest||master);o.start(t);o.stop(t+d+.05)}
+const CH=[[261.63,329.63,392,523.25],[196,246.94,293.66,392],[220,261.63,329.63,440],[174.61,220,261.63,349.23]],AP=[0,1,2,3,2,3,1,2];
+let nextT=0,step=0,nb;
+function nhit(t,d,fq,ty,v){if(!nb){nb=AC.createBuffer(1,AC.sampleRate,AC.sampleRate);const x=nb.getChannelData(0);for(let i=0;i<x.length;i++)x[i]=Math.random()*2-1}
+  const s=AC.createBufferSource();s.buffer=nb;const f=AC.createBiquadFilter();f.type=ty;f.frequency.value=fq;const g=AC.createGain();g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);s.connect(f);f.connect(g);g.connect(mus);s.start(t,Math.random()*.5,d+.02)}
+function sched(){if(!AC)return;while(nextT<AC.currentTime+.5){const c=CH[(step>>3)&3],i=step&7;
+  tone(c[AP[i]]*(i==7?2:1),nextT,.22,'square',.12,mus);tone(c[AP[i]]/2,nextT,.2,'triangle',.3,mus);
+  if(i%2==0)tone(c[0]/2,nextT,.28,'sawtooth',.14,mus);
+  if(i%4==0)tone(150,nextT,.15,'sine',.9,mus,40);else if(i%4==2)nhit(nextT,.12,1800,'bandpass',.5);
+  nhit(nextT,.04,7000,'highpass',.18);nextT+=.16;step++}}
+function initAudio(){if(AC)return;AC=new(window.AudioContext||window.webkitAudioContext)();master=AC.createGain();master.gain.value=.9;master.connect(AC.destination);
+  mus=AC.createGain();mus.gain.value=musOn?.6:0;mus.connect(master);nextT=AC.currentTime+.1;setInterval(sched,100)}
+function sfxBite(){if(!AC)return;const t=AC.currentTime,n=AC.sampleRate*.15,b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);const s=AC.createBufferSource();s.buffer=b;const f=AC.createBiquadFilter();f.type='bandpass';
+  f.frequency.setValueAtTime(2500,t);f.frequency.exponentialRampToValueAtTime(400,t+.15);const g=AC.createGain();g.gain.value=.7;s.connect(f);f.connect(g);g.connect(master);s.start(t);tone(220,t,.12,'square',.25,master,90)}
+const sfxKill=()=>AC&&tone(520,AC.currentTime,.18,'sawtooth',.25,master,110),
+ sfxPick=()=>AC&&tone(880,AC.currentTime,.12,'sine',.25,master,1320),
+ sfxBoom=()=>AC&&tone(160,AC.currentTime,.6,'sawtooth',.5,master,35),
+ sfxBuild=()=>{if(!AC)return;const t=AC.currentTime;[392,494,587,784].forEach((f,i)=>tone(f,t+i*.09,.25,'square',.15))},
+ jingle=w=>{if(!AC)return;const t=AC.currentTime;(w?[523,659,784,1047]:[392,330,262,196]).forEach((f,i)=>tone(f,t+i*.18,.4,'triangle',.3))};
+// ---------- estado ----------
+let camYaw=0,run=false,over=false,hp=100,wood=0,kills=0,biteCD=0,biteAnim=0,elapsed=0,spawnT=3,tt=0,mv=0,toastT,hurtT=0;
+const ants=[],hills=[],twigs=[];let houses=[];const keys={};
+function toast(s){const e=$('toast');e.textContent=s;e.style.opacity=1;clearTimeout(toastT);toastT=setTimeout(()=>e.style.opacity=0,1600)}
+for(let i=0;i<4;i++){const a=i*1.57+.5;let r=R-8,x,z,h;do{x=Math.cos(a)*r;z=Math.sin(a)*r;h=H(x,z);r-=1}while(r>22&&!(h>.6&&h<3.2));
+  const m=mesh(new T.ConeGeometry(2.4,2.2,10),M(0x7a4b2a),x,h+1.1,z);scene.add(m);hills.push({m,x,z,y:h,hp:30,max:30,shake:0,bar:mkBar(x,h+3.4,z,3)})}
+function placeTwig(m){const p=randLand(.4,6,3,R-4);m.position.set(p.x,p.h+.25,p.z)}
+for(let i=0;i<40;i++){const m=mesh(new T.BoxGeometry(.15,.15,1.1),M(0x8a5a2b));m.rotation.y=rnd(0,3);scene.add(m);placeTwig(m);twigs.push(m)}
+function spawnAnt(h){const m=new T.Group(),c=M(0x8b1a1a);
+  m.add(mesh(new T.SphereGeometry(.45,8,6),c,0,.4,-.7));m.add(mesh(new T.SphereGeometry(.3,8,6),c,0,.4,0));m.add(mesh(new T.SphereGeometry(.33,8,6),M(0x5a0e0e),0,.45,.55));
+  for(const z of [-.2,0,.2])m.add(mesh(new T.BoxGeometry(1.2,.05,.06),M(0x2a1010),0,.2,z));
+  const a=rnd(0,6.28),x=h.x+Math.cos(a)*2.8,z=h.z+Math.sin(a)*2.8;m.position.set(x,H(x,z)+.1,z);m.scale.setScalar(1.1);scene.add(m);ants.push({m,dead:0,ph:rnd(0,6)})}
+function build(){if(!run)return;if(wood<6){toast("Precisa de 6 madeiras");return}
+  const x=sp.position.x+Math.sin(sp.rotation.y)*3.8,z=sp.position.z+Math.cos(sp.rotation.y)*3.8,h=H(x,z);
+  if(h<.4){toast("Perto demais da praia");return}
+  if(Math.abs(H(x+2,z)-H(x-2,z))>2.5||Math.abs(H(x,z+2)-H(x,z-2))>2.5){toast("Terreno muito inclinado");return}
+  if(houses.some(o=>Math.hypot(o.x-x,o.z-z)<4.5)||hills.some(o=>o.hp>0&&Math.hypot(o.x-x,o.z-z)<5)){toast("Local ocupado");return}
+  wood-=6;const g=new T.Group();g.add(mesh(new T.BoxGeometry(3.3,2,3.3),M(0x8a8580),0,-.5,0));g.add(mesh(new T.BoxGeometry(3,2,3),M(0xe0c090),0,1,0));
+  const roof=mesh(new T.ConeGeometry(2.6,1.7,4),M(0xb03a2e),0,2.85,0);roof.rotation.y=Math.PI/4;g.add(roof);
+  g.add(mesh(new T.BoxGeometry(.7,1.2,.1),M(0x5a3a1a),0,.7,1.51));g.position.set(x,h,z);g.scale.setScalar(.1);scene.add(g);
+  houses.push({m:g,x,z,hp:40,max:40,t:0,bar:mkBar(x,h+4.4,z,2.4)});toast("Casa construída");sfxBuild()}
+function bite(){if(biteCD>0||!run)return;biteCD=.45;biteAnim=1;sfxBite();
+  const fx=Math.sin(sp.rotation.y),fz=Math.cos(sp.rotation.y);
+  const hit=(x,z,r)=>{const dx=x-sp.position.x,dz=z-sp.position.z,d=Math.hypot(dx,dz);return d<r&&(d<1.4||(dx*fx+dz*fz)/d>.3)};
+  ants.forEach(a=>{if(!a.dead&&hit(a.m.position.x,a.m.position.z,3.4)){a.dead=.3;wood++;kills++;sfxKill()}});
+  hills.forEach(h=>{if(h.hp>0&&hit(h.x,h.z,4.8)){h.hp-=10;h.shake=.25;setBar(h.bar,h.hp/h.max);if(h.hp<=0){scene.remove(h.m);rmBar(h.bar);toast("Formigueiro destruído");sfxBoom()}}})}
+addEventListener('keydown',e=>{keys[e.code]=1;if(e.code==='Space'){e.preventDefault();bite()}if(e.code==='KeyB')build();if(e.code==='KeyM')toggleMus();if((e.code==='Escape'||e.code==='KeyP')&&run)pause()});
+addEventListener('keyup',e=>keys[e.code]=0);
+let drag=false,lx=0;ren.domElement.addEventListener('pointerdown',e=>{drag=true;lx=e.clientX});
+addEventListener('pointerup',()=>drag=false);addEventListener('pointermove',e=>{if(drag){camYaw-=(e.clientX-lx)*.005;lx=e.clientX}});
+addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();ren.setSize(innerWidth,innerHeight)});
+let musOn=true;
+function toggleMus(){musOn=!musOn;if(mus)mus.gain.value=musOn?.6:0;$('bMus').textContent="Música: "+(musOn?"ligada":"desligada")}
+function pause(){run=false;$('t').textContent="Pausado";$('d').textContent="O jogo está em pausa.";$('bPlay').textContent="Continuar";$('msg').style.display='flex'}
+$('bPlay').onclick=()=>{if(over){location.reload();return}initAudio();if(AC.state==='suspended')AC.resume();document.activeElement.blur();run=true;$('how').style.display='none';$('msg').style.display='none'};
+$('bHow').onclick=()=>{const h=$('how');h.style.display=h.style.display==='block'?'none':'block'};
+$('bMus').onclick=toggleMus;
+function end(win){run=false;over=true;jingle(win);$('t').textContent=win?"Ilha defendida!":"A aranha caiu";
+  $('d').textContent=win?"Você construiu as casas e destruiu todos os formigueiros.":"As formigas venceram desta vez.";
+  $('msg').style.display='flex';$('bPlay').textContent="Jogar de novo";$('how').style.display='none'}
+const clock=new T.Clock(),pos=ocean.geometry.attributes.position,lerpA=(a,b,t)=>{const d=((b-a+Math.PI*3)%(Math.PI*2))-Math.PI;return a+d*t};
+function loop(){requestAnimationFrame(loop);const dt=Math.min(clock.getDelta(),.05);tt+=dt;
+  for(let i=0;i<pos.count;i++){const x=pos.getX(i),z=pos.getZ(i);pos.setY(i,Math.sin(x*.15+tt)*.25+Math.cos(z*.2+tt*1.3)*.2)}pos.needsUpdate=true;
+  if(keys.KeyQ||keys.ArrowLeft)camYaw+=1.8*dt;if(keys.KeyE||keys.ArrowRight)camYaw-=1.8*dt;
+  const sY=Math.sin(camYaw),cY=Math.cos(camYaw);
+  if(run){elapsed+=dt;biteCD-=dt;
+    const f=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0),s=(keys.KeyD?1:0)-(keys.KeyA?1:0);
+    let mx=-sY*f+cY*s,mz=-cY*f-sY*s;const ml=Math.hypot(mx,mz);mv=ml?1:Math.max(0,mv-dt*6);
+    if(ml){mx/=ml;mz/=ml;const px=sp.position.x,pz=sp.position.z,nx=px+mx*9*dt,nz=pz+mz*9*dt;
+      if(H(nx,nz)>-.4){sp.position.x=nx;sp.position.z=nz}else if(H(nx,pz)>-.4)sp.position.x=nx;else if(H(px,nz)>-.4)sp.position.z=nz;
+      sp.rotation.y=lerpA(sp.rotation.y,Math.atan2(mx,mz),Math.min(1,dt*12))}
+    sp.position.y=H(sp.position.x,sp.position.z)+.1;
+    if(keys.Space)bite();
+    twigs.forEach(t=>{if(Math.hypot(t.position.x-sp.position.x,t.position.z-sp.position.z)<1.6){wood+=2;sfxPick();placeTwig(t)}});
+    spawnT-=dt;if(spawnT<=0){spawnT=Math.max(1.5,4.5-elapsed/40);const live=hills.filter(h=>h.hp>0);if(live.length&&ants.length<45)spawnAnt(live[Math.floor(Math.random()*live.length)])}
+    hurtT-=dt;
+    for(const a of ants){if(a.dead)continue;const p=a.m.position;let tx=sp.position.x,tz=sp.position.z,th=null;
+      if(Math.hypot(tx-p.x,tz-p.z)>9){let best=1e9;for(const h of houses){const dd=Math.hypot(h.x-p.x,h.z-p.z);if(dd<best){best=dd;th=h}}if(th){tx=th.x;tz=th.z}}
+      const dx=tx-p.x,dz=tz-p.z,dd=Math.hypot(dx,dz)||1,reach=th?2.6:1.7;
+      if(dd>reach){const v=3+elapsed/120;p.x+=dx/dd*v*dt;p.z+=dz/dd*v*dt;a.m.rotation.y=Math.atan2(dx,dz);p.y=H(p.x,p.z)+.1+Math.abs(Math.sin(tt*14+a.ph))*.08}
+      else if(th){th.hp-=3*dt;setBar(th.bar,th.hp/th.max)}else{hp-=4*dt;if(hurtT<=0&&AC){hurtT=.5;tone(140,AC.currentTime,.15,'square',.2,master,70)}}}
+    houses.forEach(h=>{h.t+=dt;h.m.scale.setScalar(Math.min(1,.1+.9*h.t/.5));if(Math.hypot(h.x-sp.position.x,h.z-sp.position.z)<6)hp=Math.min(100,hp+5*dt)});
+    houses=houses.filter(h=>{if(h.hp>0)return true;scene.remove(h.m);rmBar(h.bar);toast("Uma casa foi destruída");return false});
+    if(hp<=0){hp=0;end(false)}else if(houses.length>=5&&hills.every(h=>h.hp<=0))end(true)}
+  for(let i=ants.length-1;i>=0;i--){const a=ants[i];if(a.dead){a.dead-=dt;a.m.scale.setScalar(Math.max(.01,a.dead/.3*1.1));if(a.dead<=0){scene.remove(a.m);ants.splice(i,1)}}}
+  hills.forEach(h=>{if(h.shake>0){h.shake-=dt;h.m.position.x=h.x+Math.sin(tt*60)*.12}else h.m.position.x=h.x});
+  biteAnim=Math.max(0,biteAnim-dt*5);body.scale.z=1+biteAnim*.35;body.position.y=Math.sin(tt*14)*.05*mv;
+  legs.forEach(l=>l.p.rotation.y=l.base+Math.sin(tt*14+l.ph)*.3*mv*l.side);
+  bars.forEach(b=>b.quaternion.copy(cam.quaternion));
+  const wx=sp.position.x+sY*14,wz=sp.position.z+cY*14,want=new T.Vector3(wx,Math.max(sp.position.y+9,H(wx,wz)+3),wz);
+  cam.position.lerp(want,Math.min(1,dt*6));cam.lookAt(sp.position.x,sp.position.y+1.2,sp.position.z);
+  $('hp').style.width=hp+"%";$('s1').textContent="Madeira: "+Math.floor(wood)+" (casa = 6)";
+  $('s2').textContent="Casas: "+houses.length+"/5 · Formigueiros: "+hills.filter(h=>h.hp>0).length+"/4";
+  $('s3').textContent="Formigas mortas: "+kills+" · Vivas: "+ants.filter(a=>!a.dead).length;
+  ren.render(scene,cam)}
+cam.position.set(0,H(0,0)+9,14);loop();
+</script></body></html>
